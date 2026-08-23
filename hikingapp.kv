@@ -24,7 +24,9 @@
 
     TabbedPanelItem:
         text: 'Climbs'
+        on_release: climbs.show_climbs()
         Climbs:
+            id: climbs
 
     TabbedPanelItem:
         text: 'Statistics'
@@ -32,17 +34,44 @@
 
 
 <Climbs>:
+    orientation: "vertical"
+
+    TextInput:
+        id: climb_search
+        size_hint_y: None
+        height: dp(45)
+        font_size: sp(16)
+        hint_text: "Search climbs..."
+        multiline: False
+        on_text: root.show_climbs()
+
     BoxLayout:
+        id: classification_filters
         orientation: "vertical"
+        size_hint_y: None
+        height: self.minimum_height
 
-        ScrollView:
-            do_scroll_x: False
+    ScrollView:
+        do_scroll_x: False
+        BoxLayout:
+            id: climb_list
+            orientation: "vertical"
+            size_hint_y: None
+            height: self.minimum_height
 
-            BoxLayout:
-                id: climb_list
-                orientation: "vertical"
-                size_hint_y: None
-                height: self.minimum_height
+    BoxLayout:
+        id: sort_date
+        orientation: "horizontal"
+        size_hint_y: None
+        height: dp(50)
+        Button:
+            text: "Date Des."
+            #on_release: root.sort_mountains("height", True)
+
+        Button:
+            text: "Date Asc."
+            #on_release: root.sort_mountains("height", False)
+
 
 <AddClimbs>:
     BoxLayout:
@@ -74,14 +103,41 @@
             on_release: root.add_climb_from_form()
 
 <Mountains>:
+    orientation: "vertical"
+
     BoxLayout:
+        id: classification_filters
         orientation: "vertical"
+        size_hint_y: None
+        height: self.minimum_height
 
-        ScrollView:
-            do_scroll_x: False
 
-            BoxLayout:
-                id: mountain_list
-                orientation: "vertical"
-                size_hint_y: None
-                height: self.minimum_height
+    ScrollView:
+        do_scroll_x: False
+
+        BoxLayout:
+            id: mountain_list
+            orientation: "vertical"
+            size_hint_y: None
+            height: self.minimum_height
+
+    BoxLayout:
+        id: sorting_filters
+        orientation: "horizontal"
+        size_hint_y: None
+        height: dp(50)
+        Button:
+            text: "Height Des."
+            on_release: root.sort_mountains("height", True)
+
+        Button:
+            text: "Height Asc."
+            on_release: root.sort_mountains("height", False)
+
+        Button:
+            text: "A–Z"
+            on_release: root.sort_mountains("name", False)
+
+        Button:
+            text: "Z–A"
+            on_release: root.sort_mountains("name", True)

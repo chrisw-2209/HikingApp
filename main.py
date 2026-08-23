@@ -1,14 +1,13 @@
 import sqlite3
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.widget import Widget
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
-from kivy.uix.spinner import Spinner
 from kivy.uix.tabbedpanel import TabbedPanel
-from kivy.uix.floatlayout import FloatLayout
 from kivy.metrics import sp, dp
+from kivy.uix.checkbox import CheckBox
+from kivy.uix.widget import Widget
 
 conn = sqlite3.connect('mountains.db')
 cursor = conn.cursor()
@@ -23,25 +22,142 @@ class Statistics(BoxLayout):
     pass
 
 class Mountains(BoxLayout):
+    sort_by = "height"
+    descending = True
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.classification_checkboxes = {}
+
     def on_kv_post(self, base_widget):
+
+        self.create_classification_filters()
         self.show_mountains()
+
+    def create_classification_filters(self):
+
+        classifications = get_classifications()
+
+        for classification in classifications:
+
+            row = BoxLayout(
+                orientation="horizontal",
+                size_hint_y=None,
+                size_hint_x=None,
+                width=dp(140),
+                height=dp(40)
+            )
+
+            lbl = Label(
+                text=classification,
+                font_size=sp(16),
+                size_hint_x = None,
+                width = dp(100)
+            )
+
+            chk = CheckBox(
+                active=True,
+                size_hint_x=None,
+                width=dp(40)
+            )
+
+            chk.bind(active=self.checkbox_changed)
+
+            self.classification_checkboxes[classification] = chk
+
+            row.add_widget(lbl)
+            row.add_widget(chk)
+
+            self.ids.classification_filters.add_widget(row)
+
+    def checkbox_changed(self, checkbox, value):
+
+        selected = self.get_selected_classifications()
+
+        print(selected)
+
+        self.show_mountains()
+
+    def get_selected_classifications(self):
+
+        selected = []
+
+        for classification, checkbox in self.classification_checkboxes.items():
+
+            if checkbox.active:
+                selected.append(classification)
+
+        return selected
+
+    def sort_mountains(self, sort_by, descending):
+        self.sort_by = sort_by
+        self.descending = descending
+        self.show_mountains()
+
     def show_mountains(self):
         self.ids.mountain_list.clear_widgets()
-        mountains = get_mountains()
+        selected = self.get_selected_classifications()
+        mountains = get_mountains(
+            selected,
+            self.sort_by,
+            self.descending
+        )
         for mountain in mountains:
-            label = Label(text=f"{mountain[1]} - {mountain[2]}m",
+            label = Label(
+                text=f"{mountain[1]} - {mountain[2]}m",
                 size_hint_y=None,
                 height=dp(45),
                 font_size=sp(16)
-                )
+            )
             self.ids.mountain_list.add_widget(label)
 
 class Climbs(BoxLayout):
+    sort_by = "date"
+    descending = True
+    classification_checkboxes = {}
     def on_kv_post(self, base_widget):
+        self.create_classification_filters()
+        self.show_climbs()
+    def create_classification_filters(self):
+        classifications = get_classifications()
+        for classification in classifications:
+            row = BoxLayout(
+                orientation="horizontal",
+                size_hint_y=None,
+                height=dp(40)
+            )
+            lbl = Label(
+                text=classification,
+                font_size=sp(16)
+            )
+            chk = CheckBox(
+                active=True,
+                size_hint_x=None,
+                width=dp(40)
+            )
+            chk.bind(active=self.checkbox_changed)
+            self.classification_checkboxes[classification] = chk
+            row.add_widget(lbl)
+            row.add_widget(chk)
+            self.ids.classification_filters.add_widget(row)
+    def get_selected_classifications(self):
+        selected = []
+        for classification, checkbox in self.classification_checkboxes.items():
+            if checkbox.active:
+                selected.append(classification)
+        return selected
+    def checkbox_changed(self, checkbox, active):
         self.show_climbs()
     def show_climbs(self):
         self.ids.climb_list.clear_widgets()
-        climbs = get_climbs()
+        selected = self.get_selected_classifications()
+        search = self.ids.climb_search.text
+        climbs = get_climbs(
+            selected,
+            search,
+            self.sort_by,
+            self.descending
+        )
         for climb in climbs:
             label = Label(
                 text=f"{climb[1]} - {climb[2]}",
@@ -156,14 +272,19 @@ def create_tables():
     VALUES
         ('snowdon', 1085, 53.0685,-4.0763),
         ('garnedd ugain', 1065, 53.0754,-4.0757),
-        ('aran fawddwy', 905, 52.7847,-3.6881)
-
+        ('aran fawddwy', 905, 52.7847,-3.6881),
+        ('carnedd llewelyn', 1064, 53.1583,-3.9681),
+        ('carnedd dafydd', 1044, 53.1474,-4.0008),
+        ('glyder fawr', 1011, 53.1258,-4.0322)
     """)
 
     mountain_data = [
         ("snowdon", ["w3000", "marilyn"]),
         ("garnedd ugain", ["w3000"]),
-        ("aran fawddwy", ["marilyn"])
+        ("aran fawddwy", ["marilyn"]),
+        ("carnedd llewelyn", ["w3000", "marilyn"]),
+        ("carnedd dafydd", ["w3000"]),
+        ("glyder fawr", ["w3000", "marilyn"]),
     ]
 
     for mountain_name, classifications in mountain_data:
@@ -227,19 +348,74 @@ def add_climb(mountain_id, date_climbed, time_climbed, latitude, longitude):
     ))
     conn.commit()
 
-def get_climbs():
-    cursor.execute("""
-        SELECT climbs.id, mountains.name, climbs.date_climbed
+def get_climbs(selected=None, search=None, sort_by="date", descending=True):
+    query = """
+        SELECT DISTINCT
+            climbs.id,
+            mountains.name,
+            climbs.date_climbed,
+            climbs.time_climbed,
+            climbs.lat_checked_in,
+            climbs.lon_checked_in
         FROM climbs
-        JOIN mountains ON climbs.mountain_id = mountains.id
-    """)
+        JOIN mountains
+            ON climbs.mountain_id = mountains.id
+    """
+    parameters = []
+    if selected:
+        placeholders = ",".join("?" for _ in selected)
+        query += f"""
+            JOIN mountain_classifications
+                ON mountains.id = mountain_classifications.mountain_id
+            JOIN classifications
+                ON mountain_classifications.classification_id = classifications.id
+            WHERE classifications.classification IN ({placeholders})
+        """
+        parameters.extend(selected)
+    if search:
+        if selected:
+            query += " AND mountains.name LIKE ?"
+        else:
+            query += " WHERE mountains.name LIKE ?"
+        parameters.append(f"%{search}%")
+    direction = "DESC" if descending else "ASC"
+    query += f" ORDER BY climbs.date_climbed {direction}"
+    cursor.execute(query, parameters)
     return cursor.fetchall()
 
-def get_mountains():
-    cursor.execute("""
-        SELECT * FROM mountains
-    """)
+def get_mountains(classifications=None, sort_by="name", descending=False):
+    query ="""
+        SELECT DISTINCT mountains.*
+        FROM mountains
+    """
+    parameters = []
+    if classifications:
+        placeholders = ",".join("?" for _ in classifications)
+        query += f"""
+            JOIN mountain_classifications
+                ON mountains.id = mountain_classifications.mountain_id
+            JOIN classifications
+                ON mountain_classifications.classification_id = classifications.id
+            WHERE classifications.classification IN ({placeholders})
+        """
+        parameters.extend(classifications)
+    sort_options = {
+        "name":"mountains.name",
+        "height":"mountains.height"
+    }
+    sort_column = sort_options.get(sort_by, "mountains.name")
+    direction = "DESC" if descending else "ASC"
+    query += f"ORDER BY {sort_column} {direction}"
+    cursor.execute(query, parameters)
     return cursor.fetchall()
+
+def get_classifications():
+    cursor.execute("""
+        SELECT classification
+        FROM classifications
+        ORDER BY classification
+    """)
+    return [row[0] for row in cursor.fetchall()]
 
 def main():
     create_tables()
@@ -248,10 +424,3 @@ def main():
 
 if __name__== "__main__":
     main() 
-
-
-
-
-
-
-
