@@ -1,0 +1,72 @@
+#: kivy 1.0.9
+
+<HikingApp>:
+    canvas:
+        Rectangle:
+            pos: self.centre_x -5,0
+            size:10, self.height
+
+<HikingWidget>:
+    orientation: "vertical"
+
+<ClimbScreen>:
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            id: climb_list
+            orientation: "vertical"
+
+        Button:
+            text: "Add Climb"
+            on_release: root.manager.current = "add_climb"
+
+        Button:
+            text: "Mountain List"
+            on_release: root.manager.current = "mountains"
+
+<AddClimbScreen>:
+    BoxLayout:
+        orientation: "vertical"
+
+        TextInput:
+            id: mountain_search
+            hint_text: "Search for a mountain"
+            on_text: root.search_mountains(self.text)
+
+        BoxLayout:
+            id: mountain_results
+            orientation: "vertical"
+
+        Label:
+            id: selected_mountain
+            text: "No mountain selected"
+
+        TextInput:
+            id: date_climbed
+            hint_text: "Date climbed"
+
+        TextInput:
+            id: time_climbed
+            hint_text: "Time climbed"
+
+        Button:
+            text: "Add Climb"
+            on_release: root.add_climb_from_form()
+
+        Button:
+            text: "Back"
+            on_release: root.manager.current = "climbs"
+
+
+<MountainScreen>:
+    BoxLayout:
+        orientation: "vertical"
+
+        BoxLayout:
+            id: mountain_list
+            orientation: "vertical"
+
+        Button:
+            text: "Back"
+            on_release: root.manager.current = "climbs"
