@@ -6,26 +6,45 @@
             pos: self.centre_x -5,0
             size:10, self.height
 
-<HikingWidget>:
-    orientation: "vertical"
+<TabBar>:
+    do_default_tab: False
+    tab_width: self.width / 5  
 
-<ClimbScreen>:
+    TabbedPanelItem:
+        text: 'Home'
+        Home:
+
+    TabbedPanelItem:
+        text: 'Add Climb'
+        AddClimbs:       
+
+    TabbedPanelItem:
+        text: 'Mountains'
+        Mountains:
+
+    TabbedPanelItem:
+        text: 'Climbs'
+        Climbs:
+
+    TabbedPanelItem:
+        text: 'Statistics'
+        Statistics:
+
+
+<Climbs>:
     BoxLayout:
         orientation: "vertical"
 
-        BoxLayout:
-            id: climb_list
-            orientation: "vertical"
+        ScrollView:
+            do_scroll_x: False
 
-        Button:
-            text: "Add Climb"
-            on_release: root.manager.current = "add_climb"
+            BoxLayout:
+                id: climb_list
+                orientation: "vertical"
+                size_hint_y: None
+                height: self.minimum_height
 
-        Button:
-            text: "Mountain List"
-            on_release: root.manager.current = "mountains"
-
-<AddClimbScreen>:
+<AddClimbs>:
     BoxLayout:
         orientation: "vertical"
 
@@ -54,19 +73,15 @@
             text: "Add Climb"
             on_release: root.add_climb_from_form()
 
-        Button:
-            text: "Back"
-            on_release: root.manager.current = "climbs"
-
-
-<MountainScreen>:
+<Mountains>:
     BoxLayout:
         orientation: "vertical"
 
-        BoxLayout:
-            id: mountain_list
-            orientation: "vertical"
+        ScrollView:
+            do_scroll_x: False
 
-        Button:
-            text: "Back"
-            on_release: root.manager.current = "climbs"
+            BoxLayout:
+                id: mountain_list
+                orientation: "vertical"
+                size_hint_y: None
+                height: self.minimum_height

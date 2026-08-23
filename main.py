@@ -5,33 +5,53 @@ from kivy.uix.widget import Widget
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
-from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.spinner import Spinner
+from kivy.uix.tabbedpanel import TabbedPanel
+from kivy.uix.floatlayout import FloatLayout
+from kivy.metrics import sp, dp
 
 conn = sqlite3.connect('mountains.db')
 cursor = conn.cursor()
 
-class MountainScreen(Screen):
-    def on_enter(self):
+class TabBar(TabbedPanel):
+    pass
+
+class Home(BoxLayout):
+    pass
+
+class Statistics(BoxLayout):
+    pass
+
+class Mountains(BoxLayout):
+    def on_kv_post(self, base_widget):
         self.show_mountains()
     def show_mountains(self):
         self.ids.mountain_list.clear_widgets()
         mountains = get_mountains()
         for mountain in mountains:
-            label = Label(text=f"{mountain[1]} - {mountain[2]}")
+            label = Label(text=f"{mountain[1]} - {mountain[2]}m",
+                size_hint_y=None,
+                height=dp(45),
+                font_size=sp(16)
+                )
             self.ids.mountain_list.add_widget(label)
 
-class ClimbScreen(Screen):
-    def on_enter(self):
+class Climbs(BoxLayout):
+    def on_kv_post(self, base_widget):
         self.show_climbs()
     def show_climbs(self):
         self.ids.climb_list.clear_widgets()
         climbs = get_climbs()
         for climb in climbs:
-            label = Label(text=f"{climb[1]} - {climb[2]}")
+            label = Label(
+                text=f"{climb[1]} - {climb[2]}",
+                size_hint_y=None,
+                height=dp(45),
+                font_size=sp(16)
+                )
             self.ids.climb_list.add_widget(label)
 
-class AddClimbScreen(Screen):
+class AddClimbs(BoxLayout):
     selected_mountain_id = None
     def search_mountains(self, search_text):
         self.ids.mountain_results.clear_widgets()
@@ -82,11 +102,7 @@ class AddClimbScreen(Screen):
 
 class HikingApp(App):
     def build(self):
-        sm = ScreenManager()
-        sm.add_widget(ClimbScreen(name="climbs"))
-        sm.add_widget(AddClimbScreen(name="add_climb"))
-        sm.add_widget(MountainScreen(name="mountains"))
-        return sm
+        return TabBar()
 
 def create_tables():
     cursor.execute("""
