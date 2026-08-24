@@ -8,9 +8,82 @@ from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.metrics import sp, dp
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.widget import Widget
+from kivy.clock import Clock
 
 conn = sqlite3.connect('mountains.db')
 cursor = conn.cursor()
+
+class ClimbLabel(Label):
+    def __init__(
+        self,
+        climb_id,
+        mountain_name,
+        date_climbed,
+        on_delete,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+
+        self.climb_id = climb_id
+        self.mountain_name = mountain_name
+        self.date_climbed = date_climbed
+        self.on_delete = on_delete
+
+        self.long_press_event = None
+        self.touch_start_pos = None
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            self.touch_start_pos = touch.pos
+            self.long_press_event = Clock.schedule_once(
+                lambda dt: self.long_press(),
+                0.8
+            )
+        return super().on_touch_down(touch)
+    def on_touch_move(self, touch):
+        if hasattr(self, "touch_start_pos"):
+            start_x, start_y = self.touch_start_pos
+            current_x, current_y = touch.pos
+            distance = ((current_x - start_x) ** 2 +
+                        (current_y - start_y) ** 2) ** 0.5
+            if distance > dp(15):
+                if self.long_press_event:
+                    self.long_press_event.cancel()
+                    self.long_press_event = None
+        return super().on_touch_move(touch)
+    def delete_pressed(self, popup):
+        delete_climb(self.climb_id)
+        popup.dismiss()
+        self.on_delete()
+    def long_press(self):
+        content = BoxLayout(
+            orientation="vertical",
+            spacing=dp(10),
+            padding=dp(10)
+        )
+        message = Label(
+            text=f"Delete climb {self.mountain_name} on {self.date_climbed}"
+        )
+        buttons = BoxLayout(
+            orientation="horizontal",
+            size_hint_y=None,
+            height=dp(50)
+        )
+        cancel_button = Button(text="Cancel")
+        delete_button = Button(text="Delete")
+        buttons.add_widget(cancel_button)
+        buttons.add_widget(delete_button)
+        content.add_widget(message)
+        content.add_widget(buttons)
+        popup = Popup(
+            title="Delete Climb?",
+            content=content,
+            size_hint=(0.6, 0.3)
+        )
+        cancel_button.bind(on_release=popup.dismiss)
+        delete_button.bind(
+            on_release=lambda instance: self.delete_pressed(popup)
+        )
+        popup.open()
 
 class TabBar(TabbedPanel):
     pass
@@ -35,11 +108,8 @@ class Mountains(BoxLayout):
         self.show_mountains()
 
     def create_classification_filters(self):
-
         classifications = get_classifications()
-
         for classification in classifications:
-
             row = BoxLayout(
                 orientation="horizontal",
                 size_hint_y=None,
@@ -47,53 +117,36 @@ class Mountains(BoxLayout):
                 width=dp(140),
                 height=dp(40)
             )
-
             lbl = Label(
                 text=classification,
                 font_size=sp(16),
                 size_hint_x = None,
                 width = dp(100)
             )
-
             chk = CheckBox(
                 active=True,
                 size_hint_x=None,
                 width=dp(40)
             )
-
             chk.bind(active=self.checkbox_changed)
-
             self.classification_checkboxes[classification] = chk
-
             row.add_widget(lbl)
             row.add_widget(chk)
-
             self.ids.classification_filters.add_widget(row)
-
     def checkbox_changed(self, checkbox, value):
-
-        selected = self.get_selected_classifications()
-
-        print(selected)
-
+        #selected = self.get_selected_classifications()
+        #print(selected)
         self.show_mountains()
-
     def get_selected_classifications(self):
-
         selected = []
-
         for classification, checkbox in self.classification_checkboxes.items():
-
             if checkbox.active:
                 selected.append(classification)
-
         return selected
-
     def sort_mountains(self, sort_by, descending):
         self.sort_by = sort_by
         self.descending = descending
         self.show_mountains()
-
     def show_mountains(self):
         self.ids.mountain_list.clear_widgets()
         selected = self.get_selected_classifications()
@@ -124,11 +177,15 @@ class Climbs(BoxLayout):
             row = BoxLayout(
                 orientation="horizontal",
                 size_hint_y=None,
-                height=dp(40)
+                size_hint_x=None,
+                height=dp(40),
+                width=dp(140)
             )
             lbl = Label(
                 text=classification,
-                font_size=sp(16)
+                font_size=sp(16),
+                size_hint_x = None,
+                width = dp(100)
             )
             chk = CheckBox(
                 active=True,
@@ -148,6 +205,11 @@ class Climbs(BoxLayout):
         return selected
     def checkbox_changed(self, checkbox, active):
         self.show_climbs()
+    def sort_climbs(self, sort_by, descending):
+        print("SORT:", sort_by, descending)
+        self.sort_by = sort_by
+        self.descending = descending
+        self.show_climbs()
     def show_climbs(self):
         self.ids.climb_list.clear_widgets()
         selected = self.get_selected_classifications()
@@ -159,12 +221,16 @@ class Climbs(BoxLayout):
             self.descending
         )
         for climb in climbs:
-            label = Label(
+            label = ClimbLabel(
+                climb_id=climb[0],
+                mountain_name=climb[1],
+                date_climbed=climb[2],
+                on_delete=self.show_climbs,
                 text=f"{climb[1]} - {climb[2]}",
                 size_hint_y=None,
                 height=dp(45),
                 font_size=sp(16)
-                )
+            )
             self.ids.climb_list.add_widget(label)
 
 class AddClimbs(BoxLayout):
@@ -416,6 +482,14 @@ def get_classifications():
         ORDER BY classification
     """)
     return [row[0] for row in cursor.fetchall()]
+
+def delete_climb(climb_id):
+    query = """
+        DELETE FROM climbs
+        WHERE id = ?
+    """
+    cursor.execute(query, (climb_id,))
+    conn.commit()
 
 def main():
     create_tables()

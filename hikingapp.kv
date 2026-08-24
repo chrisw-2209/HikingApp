@@ -64,13 +64,14 @@
         orientation: "horizontal"
         size_hint_y: None
         height: dp(50)
+
         Button:
             text: "Date Des."
-            #on_release: root.sort_mountains("height", True)
+            on_release: root.sort_climbs("date", True)
 
         Button:
             text: "Date Asc."
-            #on_release: root.sort_mountains("height", False)
+            on_release: root.sort_climbs("date", False)
 
 
 <AddClimbs>:
