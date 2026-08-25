@@ -92,7 +92,19 @@ class Home(BoxLayout):
     pass
 
 class Statistics(BoxLayout):
-    pass
+    def on_kv_post(self, base_widget):
+        self.show_statistics()
+    def show_statistics(self):
+        self.ids.statistic_table.clear_widgets()
+        statistics = get_statistics() 
+        for classification in statistics:
+            climb_percent = round((classification[2] / classification[1]) *100,1)
+            label = Label(
+                text=f"{classification[0]} - {classification[2]}/{classification[1]} - {climb_percent}%",
+                size_hint_y = None,
+                height = dp(45)
+            )
+            self.ids.statistic_table.add_widget(label)
 
 class Mountains(BoxLayout):
     sort_by = "height"
@@ -482,6 +494,23 @@ def get_classifications():
         ORDER BY classification
     """)
     return [row[0] for row in cursor.fetchall()]
+
+def get_statistics():
+    query = """
+        SELECT
+            classifications.classification,
+            COUNT(DISTINCT mountain_classifications.mountain_id),
+            COUNT(DISTINCT climbs.mountain_id)
+        FROM classifications
+        JOIN mountain_classifications
+            ON classifications.id = mountain_classifications.classification_id
+        LEFT JOIN climbs
+            ON mountain_classifications.mountain_id = climbs.mountain_id
+        GROUP BY classifications.classification
+    """
+
+    cursor.execute(query)
+    return cursor.fetchall()
 
 def delete_climb(climb_id):
     query = """

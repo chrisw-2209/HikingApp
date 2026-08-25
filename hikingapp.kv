@@ -30,7 +30,9 @@
 
     TabbedPanelItem:
         text: 'Statistics'
+        on_release: statistics.show_statistics()
         Statistics:
+            id: statistics
 
 
 <Climbs>:
@@ -142,3 +144,25 @@
         Button:
             text: "Z–A"
             on_release: root.sort_mountains("name", True)
+
+<Statistics>:
+    orientation: "vertical"
+
+    Label:
+        text: "Your Climbing Statistics"
+        font_size: sp(24)
+        size_hint_y: None
+        height: dp(50)
+
+    BoxLayout:
+        id: statistic_table
+        orientation: "vertical"
+        size_hint_y: None
+        height: self.minimum_height
+
+    Widget:
+        size_hint_y: 1
+
+
+
+
