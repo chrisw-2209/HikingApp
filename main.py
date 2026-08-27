@@ -9,6 +9,8 @@ from kivy.metrics import sp, dp
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.widget import Widget
 from kivy.clock import Clock
+from kivy_garden.mapview import MapView, MapMarker, MapMarkerPopup
+from kivy.properties import StringProperty, NumericProperty
 
 conn = sqlite3.connect('mountains.db')
 cursor = conn.cursor()
@@ -85,11 +87,100 @@ class ClimbLabel(Label):
         )
         popup.open()
 
+class MountainMarker(MapMarkerPopup):
+    mountain_name = StringProperty("")
+    elevation = NumericProperty(0)
+    mountain_id = NumericProperty(0)
+    def __init__(self, mountain_id, mountain_name, elevation, **kwargs):
+        super().__init__(**kwargs)
+        self.mountain_id = mountain_id
+        self.mountain_name = mountain_name
+        self.elevation = elevation
+
 class TabBar(TabbedPanel):
     pass
 
 class Home(BoxLayout):
-    pass
+    climbed_checkboxes = {}
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.open_marker = None
+        self.mapview = None
+        self.markers = []
+        self.climbed_filter = None
+    def on_kv_post(self, base_widget):
+        self.create_climbed_filters()
+        self.show_map()
+        self.show_markers()
+    def set_climbed_filter(self, climbed):
+        self.climbed_filter = climbed
+        #print(self.climbed_filter)
+        self.show_markers()
+    def show_map(self):
+        self.ids.map_container.clear_widgets()
+        self.mapview = MapView(zoom=8, lat=52.33022, lon=-3.76641)
+        self.ids.map_container.add_widget(self.mapview)
+    def get_selected_classifications(self):
+        selected = []
+        for classification, checkbox in self.climbed_checkboxes.items():
+            if checkbox.active:
+                selected.append(classification)
+        return selected
+    def show_markers(self):
+        for marker in self.markers:
+            self.mapview.remove_marker(marker)
+        self.markers = []
+        selected = self.get_selected_classifications()
+        if not selected:
+            return
+        for mountain in get_mountains(selected,self.climbed_filter):
+            temp_marker = MountainMarker(
+                mountain_id=mountain[0],
+                mountain_name=mountain[1],
+                elevation=mountain[2],
+                lat=mountain[3],
+                lon=mountain[4]
+                )
+            temp_marker.bind(
+                on_release=lambda marker: self.marker_pressed(marker)
+            )       
+            self.mapview.add_marker(temp_marker)
+            self.markers.append(temp_marker)
+    def marker_pressed(self, marker):
+        if self.open_marker is not None and self.open_marker != marker:
+            self.open_marker.is_open = False
+        self.open_marker = marker
+    def checkbox_changed(self, checkbox, active):
+        self.show_markers()
+    def create_climbed_filters(self):
+            classifications = get_classifications()
+            for classification in classifications:
+                row = BoxLayout(
+                    orientation="horizontal",
+                    size_hint_y=None,
+                    size_hint_x=None,
+                    height=dp(40),
+                    width=dp(140)
+                )
+                lbl = Label(
+                    text=classification,
+                    font_size=sp(16),
+                    size_hint_x = None,
+                    width = dp(100)
+                )
+                chk = CheckBox(
+                    active=True,
+                    size_hint_x=None,
+                    width=dp(40)
+                )
+                chk.bind(active=self.checkbox_changed)
+                self.climbed_checkboxes[classification] = chk
+                row.add_widget(lbl)
+                row.add_widget(chk)
+                self.ids.map_filters.add_widget(row)
+    def refresh_home(self):
+        self.show_map()
+        self.show_markers()
 
 class Statistics(BoxLayout):
     def on_kv_post(self, base_widget):
@@ -461,29 +552,43 @@ def get_climbs(selected=None, search=None, sort_by="date", descending=True):
     cursor.execute(query, parameters)
     return cursor.fetchall()
 
-def get_mountains(classifications=None, sort_by="name", descending=False):
-    query ="""
+def get_mountains(classifications=None, climbed=None, sort_by="name", descending=False):
+    query = """
         SELECT DISTINCT mountains.*
         FROM mountains
     """
     parameters = []
+    conditions = []
     if classifications:
         placeholders = ",".join("?" for _ in classifications)
-        query += f"""
+        query += """
             JOIN mountain_classifications
                 ON mountains.id = mountain_classifications.mountain_id
             JOIN classifications
                 ON mountain_classifications.classification_id = classifications.id
-            WHERE classifications.classification IN ({placeholders})
         """
+        conditions.append(f"classifications.classification IN ({placeholders})")
         parameters.extend(classifications)
+    query += """
+        LEFT JOIN climbs
+            ON mountains.id = climbs.mountain_id
+    """
+    if climbed is True:
+        conditions.append("climbs.mountain_id IS NOT NULL")
+    elif climbed is False:
+        conditions.append("climbs.mountain_id IS NULL")
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
     sort_options = {
-        "name":"mountains.name",
-        "height":"mountains.height"
+        "name": "mountains.name",
+        "height": "mountains.height"
     }
-    sort_column = sort_options.get(sort_by, "mountains.name")
+    sort_column = sort_options.get(
+        sort_by,
+        "mountains.name"
+    )
     direction = "DESC" if descending else "ASC"
-    query += f"ORDER BY {sort_column} {direction}"
+    query += f" ORDER BY {sort_column} {direction}"
     cursor.execute(query, parameters)
     return cursor.fetchall()
 
@@ -510,6 +615,13 @@ def get_statistics():
     """
 
     cursor.execute(query)
+    return cursor.fetchall()
+
+def get_mountain_list():
+    cursor.execute("""
+        SELECT *
+        FROM mountains
+    """)
     return cursor.fetchall()
 
 def delete_climb(climb_id):

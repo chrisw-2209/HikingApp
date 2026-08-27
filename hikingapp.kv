@@ -12,7 +12,9 @@
 
     TabbedPanelItem:
         text: 'Home'
+        on_release: home.show_markers()
         Home:
+            id: home
 
     TabbedPanelItem:
         text: 'Add Climb'
@@ -34,6 +36,56 @@
         Statistics:
             id: statistics
 
+<Home>:
+    orientation: "vertical"
+    
+    BoxLayout:
+        id: map_filters
+        orientation: "vertical"
+        size_hint_y: None
+        height: self.minimum_height
+    
+    BoxLayout:
+        id: map_container
+        orientation: "vertical"
+
+    BoxLayout:
+        id: climbed_filters
+        orientation:"horizontal"
+        size_hint_y: None
+        height: dp(50)
+        ToggleButton:
+            text: "Show All"
+            group: "climbed_filter"
+            state: "down"
+            on_release: root.set_climbed_filter(None)
+        ToggleButton:
+            text: "Show Climbed"
+            group: "climbed_filter"
+            on_release: root.set_climbed_filter(True)
+        ToggleButton:
+            text: "Show Unclimbed"
+            group: "climbed_filter"
+            on_release: root.set_climbed_filter(False)
+
+<MountainMarker>:
+    BoxLayout:
+        orientation: "vertical"
+        size_hint: None, None
+        size: dp(160), dp(70)
+
+        canvas.before:
+            Color:
+                rgba: 0.15, 0.15, 0.15, 0.9
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: root.mountain_name
+
+        Label:
+            text: f"{root.elevation} m"
 
 <Climbs>:
     orientation: "vertical"
@@ -74,7 +126,6 @@
         Button:
             text: "Date Asc."
             on_release: root.sort_climbs("date", False)
-
 
 <AddClimbs>:
     BoxLayout:
