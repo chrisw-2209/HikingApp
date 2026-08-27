@@ -1,4 +1,5 @@
 import sqlite3
+import csv
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -11,6 +12,7 @@ from kivy.uix.widget import Widget
 from kivy.clock import Clock
 from kivy_garden.mapview import MapView, MapMarker, MapMarkerPopup
 from kivy.properties import StringProperty, NumericProperty
+from datetime import datetime
 
 conn = sqlite3.connect('mountains.db')
 cursor = conn.cursor()
@@ -253,10 +255,13 @@ class Mountains(BoxLayout):
     def show_mountains(self):
         self.ids.mountain_list.clear_widgets()
         selected = self.get_selected_classifications()
+        if not selected:
+            return
         mountains = get_mountains(
-            selected,
-            self.sort_by,
-            self.descending
+            classifications=selected,
+            climbed=None,
+            sort_by=self.sort_by,
+            descending=self.descending
         )
         for mountain in mountains:
             label = Label(
@@ -335,6 +340,8 @@ class Climbs(BoxLayout):
                 font_size=sp(16)
             )
             self.ids.climb_list.add_widget(label)
+    def reset_search(self):
+        self.ids.climb_search.text = ""
 
 class AddClimbs(BoxLayout):
     selected_mountain_id = None
@@ -363,6 +370,43 @@ class AddClimbs(BoxLayout):
     def add_climb_from_form(self):
         date = self.ids.date_climbed.text
         time = self.ids.time_climbed.text
+        if not self.selected_mountain_id:
+            popup_nomountain = Popup(
+                title="Warning",
+                content=Label(text="No Mountain Selected"),
+                size_hint=(0.6,0.3)
+            )
+            popup_nomountain.open()
+            return
+        if not date:
+            popup_date = Popup(
+                title="Warning",
+                content=Label(text="No Date Selected"),
+                size_hint=(0.6,0.3)
+            )
+            popup_date.open()
+            return
+        try:
+            datetime.strptime(date,"%Y-%m-%d")
+        except ValueError:
+            popup_dateformat = Popup(
+                title="Warning",
+                content=Label(text="Please use YYYY-MM-DD"),
+                size_hint=(0.6,0.3)
+            )
+            popup_dateformat.open()
+            return
+        if time:
+            try:
+                datetime.strptime(time,"%H:%M")
+            except ValueError:
+                popup_timeformat = Popup(
+                title="Warning",
+                content=Label(text="Please use HH:MM"),
+                size_hint=(0.6,0.3)
+            )
+            popup_timeformat.open()
+            return
         add_climb(
             self.selected_mountain_id,
             date,
@@ -384,12 +428,28 @@ class AddClimbs(BoxLayout):
         self.ids.time_climbed.text = ""
         self.ids.selected_mountain.text = "No mountain selected"
         self.ids.mountain_results.clear_widgets()
+    def reset_search(self):
+        self.ids.mountain_search.text = ""
 
 class HikingApp(App):
     def build(self):
         return TabBar()
 
 def create_tables():
+#==========OPEN CSV FILE===========================================================================================
+    with open("mountain_data.csv", newline="", encoding="utf-8") as csvfile:
+        mountains = list(csv.DictReader(csvfile))
+
+#==========CLEAR REFERENCE RELATIONSHIPS============================================================
+    cursor.execute("""
+        DELETE FROM mountain_classifications
+    """)
+
+    cursor.execute("""
+        DELETE FROM classifications
+    """)
+
+#==========CREATE SQL TABLES========================================================================================
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS classifications (
         id INTEGER PRIMARY KEY,
@@ -428,60 +488,98 @@ def create_tables():
         FOREIGN KEY (mountain_id) REFERENCES mountains (id)
     )
     """)
-
-    cursor.execute("""
+#==========ADD CLASSIFICATIONS TO CLASSIFICATION TABLE============================================
+    classifications_data = []
+    query = """
     INSERT OR IGNORE INTO classifications (classification)
-    VALUES
-        ('w3000'),
-        ('marilyn');
-    """)
+    VALUES (?)
+    """
+    for mountain in mountains:
+        for classification in mountain["Classification"].split(","):
+            classification = classification.strip()
+            if (classification,) not in classifications_data:
+                classifications_data.append((classification,))
+    cursor.executemany(query,classifications_data)
 
-    cursor.execute("""
-    INSERT OR IGNORE INTO mountains (name, height, lat, lon)
-    VALUES
-        ('snowdon', 1085, 53.0685,-4.0763),
-        ('garnedd ugain', 1065, 53.0754,-4.0757),
-        ('aran fawddwy', 905, 52.7847,-3.6881),
-        ('carnedd llewelyn', 1064, 53.1583,-3.9681),
-        ('carnedd dafydd', 1044, 53.1474,-4.0008),
-        ('glyder fawr', 1011, 53.1258,-4.0322)
-    """)
+#==========ADD NAME, HEIGHT, LAT AND LON TO MOUNTAIN TABLE======================================
+    mountains_table_data = []
+    query =   """INSERT INTO mountains (name, height, lat, lon)
+        VALUES (?,?,?,?)
+        ON CONFLICT(name)
+        DO UPDATE SET
+            height = excluded.height,
+            lat = excluded.lat,
+            lon = excluded.lon
+    """
+    for mountain in mountains:
+        mountains_table_data.append(
+            (
+                mountain["Name"],
+                int(mountain["Height"]),
+                float(mountain["Latitude"]),
+                float(mountain["Longitude"])
+            )
+        )
+    cursor.executemany(query, mountains_table_data)
 
-    mountain_data = [
-        ("snowdon", ["w3000", "marilyn"]),
-        ("garnedd ugain", ["w3000"]),
-        ("aran fawddwy", ["marilyn"]),
-        ("carnedd llewelyn", ["w3000", "marilyn"]),
-        ("carnedd dafydd", ["w3000"]),
-        ("glyder fawr", ["w3000", "marilyn"]),
-    ]
+#==========REBUILD MOUNTAIN CLASSIFICATIONS========================================================
+    mountain_data = []
+
+    for mountain in mountains:
+
+        classifications = [
+            classification.strip()
+            for classification in mountain["Classification"].split(",")
+        ]
+
+        mountain_data.append(
+            (
+                mountain["Name"],
+                classifications
+            )
+        )
+
 
     for mountain_name, classifications in mountain_data:
+
+        # Find the database ID for this mountain
         cursor.execute("""
             SELECT id
             FROM mountains
             WHERE name = ?
-        """,(
+        """, (
             mountain_name,
         ))
+
         mountain_id = cursor.fetchone()[0]
+
+
         for classification_name in classifications:
+
+            # Find the database ID for this classification
             cursor.execute("""
                 SELECT id
                 FROM classifications
-                WHERE classification = ?    
-            """,(
+                WHERE classification = ?
+            """, (
                 classification_name,
             ))
+
             classification_id = cursor.fetchone()[0]
+
+
+            # Create the relationship between the two IDs
             cursor.execute("""
                 INSERT OR IGNORE INTO mountain_classifications
                     (mountain_id, classification_id)
-                VALUES
-                    (?, ?)
+                VALUES (?, ?)
             """, (
-                mountain_id, classification_id,
+                mountain_id,
+                classification_id
             ))
+
+
+#==========UPDATE THE DATABASE=======================================================================
     conn.commit()
 
 def coordinate_check(latitude, longitude):

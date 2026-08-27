@@ -8,7 +8,7 @@
 
 <TabBar>:
     do_default_tab: False
-    tab_width: self.width / 5  
+    tab_width: self.width / 5
 
     TabbedPanelItem:
         text: 'Home'
@@ -18,15 +18,18 @@
 
     TabbedPanelItem:
         text: 'Add Climb'
-        AddClimbs:       
+        on_release: add_climbs.reset_search()
+        AddClimbs:
+            id: add_climbs
 
     TabbedPanelItem:
         text: 'Mountains'
         Mountains:
+            id: mountains
 
     TabbedPanelItem:
         text: 'Climbs'
-        on_release: climbs.show_climbs()
+        on_release: climbs.reset_search()
         Climbs:
             id: climbs
 
