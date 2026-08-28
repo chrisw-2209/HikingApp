@@ -1,5 +1,6 @@
 import sqlite3
 import csv
+import os
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -14,8 +15,10 @@ from kivy_garden.mapview import MapView, MapMarker, MapMarkerPopup
 from kivy.properties import StringProperty, NumericProperty
 from datetime import datetime
 
-conn = sqlite3.connect('mountains.db')
-cursor = conn.cursor()
+__version__ = "1.0.0"
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+csv_path = os.path.join(BASE_DIR, "mountain_data.csv")
 
 class ClimbLabel(Label):
     def __init__(
@@ -342,6 +345,7 @@ class Climbs(BoxLayout):
             self.ids.climb_list.add_widget(label)
     def reset_search(self):
         self.ids.climb_search.text = ""
+        self.show_climbs()
 
 class AddClimbs(BoxLayout):
     selected_mountain_id = None
@@ -399,14 +403,15 @@ class AddClimbs(BoxLayout):
         if time:
             try:
                 datetime.strptime(time,"%H:%M")
+
             except ValueError:
                 popup_timeformat = Popup(
-                title="Warning",
-                content=Label(text="Please use HH:MM"),
-                size_hint=(0.6,0.3)
-            )
-            popup_timeformat.open()
-            return
+                    title="Warning",
+                    content=Label(text="Please use HH:MM"),
+                    size_hint=(0.6,0.3)
+                )
+                popup_timeformat.open()
+                return
         add_climb(
             self.selected_mountain_id,
             date,
@@ -437,17 +442,8 @@ class HikingApp(App):
 
 def create_tables():
 #==========OPEN CSV FILE===========================================================================================
-    with open("mountain_data.csv", newline="", encoding="utf-8") as csvfile:
+    with open(csv_path, newline="", encoding="utf-8") as csvfile:
         mountains = list(csv.DictReader(csvfile))
-
-#==========CLEAR REFERENCE RELATIONSHIPS============================================================
-    cursor.execute("""
-        DELETE FROM mountain_classifications
-    """)
-
-    cursor.execute("""
-        DELETE FROM classifications
-    """)
 
 #==========CREATE SQL TABLES========================================================================================
     cursor.execute("""
@@ -488,6 +484,16 @@ def create_tables():
         FOREIGN KEY (mountain_id) REFERENCES mountains (id)
     )
     """)
+
+#==========CLEAR REFERENCE RELATIONSHIPS============================================================
+    cursor.execute("""
+        DELETE FROM mountain_classifications
+    """)
+
+    cursor.execute("""
+        DELETE FROM classifications
+    """)
+
 #==========ADD CLASSIFICATIONS TO CLASSIFICATION TABLE============================================
     classifications_data = []
     query = """
@@ -581,6 +587,13 @@ def create_tables():
 
 #==========UPDATE THE DATABASE=======================================================================
     conn.commit()
+
+def get_database_connection():
+    app = App.get_running_app()
+    db_path = os.path.join(app.user_data_dir, "mountains.db")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    return conn, cursor
 
 def coordinate_check(latitude, longitude):
     tolerance = 0.001
@@ -731,9 +744,13 @@ def delete_climb(climb_id):
     conn.commit()
 
 def main():
+    global conn, cursor
+    app = HikingApp()
+    db_path = os.path.join(app.user_data_dir, "mountains.db")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
     create_tables()
-    #add_climb(1, "2026-08-22", "14:30", 53.0685, -4.0763)
-    HikingApp().run()    
+    app.run() 
 
 if __name__== "__main__":
     main() 
