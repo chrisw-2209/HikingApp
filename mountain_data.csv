@@ -1,68 +1,140 @@
 Name,Height,Latitude,Longitude,Classification
-Snowdon,1085,53.0685,-4.0763,"marilyn,w3000"
-Garnedd Ugain,1065,53.0754,-4.0757,w3000
-Carnedd Llewelyn,1064,53.1583,-3.9681,"marilyn,w3000"
-Carnedd Dafydd,1044,53.1474,-4.0008,w3000
-Glyder Fawr,1001,53.1258,-4.0322,"marilyn,w3000"
-Y Garn (Glyderau),947,53.1478,-4.0472,"marilyn,w3000"
-Glyder Fach,994,53.1048,-4.0084,w3000
-Pen Yr Ole Wen,978,53.1314,-3.9931,w3000
-Foel Grach,976,53.1742,-3.9633,w3000
+Snowdon,1085,53.0685,-4.0763,"marilyn,w3000,hewitt"
+Garnedd Ugain,1065,53.0754,-4.0757,"w3000,hewitt"
+Carnedd Llewelyn,1064,53.1583,-3.9681,"marilyn,w3000,hewitt"
+Carnedd Dafydd,1044,53.1474,-4.0008,"w3000,hewitt"
+Glyder Fawr,1001,53.1258,-4.0322,"marilyn,w3000,hewitt"
+Glyder Fach,994,53.1048,-4.0084,"w3000,hewitt"
+Pen Yr Ole Wen,978,53.1314,-3.9931,"w3000,hewitt"
+Foel Grach,976,53.1742,-3.9633,"w3000,hewitt"
 Castell y Gwynt,972,53.104,-4.0108,w3000
-Yr Elen,962,53.1666,-3.9852,w3000
-Y Garn,947,53.1156,-4.0472,w3000
-Foel Fras,944,53.1942,-3.9531,w3000
-Carnedd Gwenllian,926,53.183,-3.9663,w3000
-Elidir Fawr,924,53.1311,-4.0833,"marilyn,w3000"
-Tryfan,918,53.1517,-4.0114,"marilyn,w3000"
-Aran Fawddwy,905,52.7847,-3.6881,marilyn
-Y Lliwedd,898,53.06,-4.0533,marilyn
-Cadair Idris,893,52.6986,-3.9047,marilyn
-Pen y Fan,886,51.8839,-3.4368,marilyn
-Moel Siabod,872,53.07,-3.9317,marilyn
-Arenig Fawr,854,52.9192,-3.7481,marilyn
-Cadair Berwyn,832,52.8803,-3.3794,marilyn
-Waun Fach,811,51.9619,-3.1492,marilyn
-Fan Brycheiniog,803,51.8831,-3.7083,marilyn
-Pen Llithrig y Wrach,799,53.1264,-3.9069,marilyn
-Moel Hebog,783,52.9942,-4.1331,marilyn
-Glasgwm,779,52.7539,-3.6889,marilyn
-Moelwyn Mawr,770,52.9867,-3.9875,marilyn
-Waun Rydd,769,51.8722,-3.3606,marilyn
-Y Llethr,756,52.8272,-3.9856,marilyn
-Pumlumon Fawr,752,52.4678,-3.7881,marilyn
-Moel Llyfnant,751,52.9056,-3.7917,marilyn
-Yr Aran,747,53.0519,-4.0806,marilyn
-Craig Cwm Silyn,734,53.03,-4.2056,marilyn
-Rhobell Fawr,734,52.8183,-3.8122,marilyn
-Fan Fawr,734,51.8594,-3.4736,marilyn
-Moel Eilio,726,53.1114,-4.1564,marilyn
-Fan Gyhirych,725,51.8589,-3.6064,marilyn
-Rhinog Fawr,720,52.8469,-3.9786,marilyn
-Rhinog Fach,711,52.82417,-3.98295,marilyn
-Trum y Ddysgl,709,53.0361,-4.1808,marilyn
-Black Mountain,703,52.0169,-3.0808,marilyn
-Allt-Fawr,698,53.0031,-3.9583,marilyn
-Mynydd Mawr,698,53.0642,-4.1706,marilyn
-Arenig Fach,689,52.9469,-3.7508,marilyn
-Maesglase,679,52.7214,-3.7386,marilyn
-Creigiau Gleision,678,53.1236,-3.8828,marilyn
-Moel Cynghorion,674,53.0858,-4.1206,marilyn
-Esgeiriau Gwynion,671,52.8153,-3.5933,marilyn
-Carnedd y Filiast,669,53.1389,-4.1103,marilyn
-Foel Cedig,667,52.8364,-3.5261,marilyn
-Tarren y Gesail,667,52.6186,-3.9103,marilyn
-Fan Nedd,663,51.8394,-3.5858,marilyn
-Manod Mawr,661,52.9861,-3.9114,marilyn
-Great Rhos,660,52.2611,-3.2008,marilyn
-Drygarn Fawr,645,52.2131,-3.6731,marilyn
-Tarrenhendre,634,52.6022,-3.9556,marilyn
-Y Garn (Rhinogydd),629,52.7842,-3.9622,marilyn
-Moel Ysgyfarnogod,623,52.8808,-3.9789,marilyn
-Cefn yr Ystrad,619,51.8183,-3.3769,marilyn
-Foel Goch,611,52.9986,-3.5414,marilyn
-Pen y Garn,611,52.3703,-3.7844,marilyn
-Tal y Fan,610,53.2386,-3.8814,marilyn
+Yr Elen,962,53.1666,-3.9852,"w3000,hewitt"
+Y Garn (Glyderau),947,53.1478,-4.0472,"marilyn,w3000,hewitt"
+Foel Fras,944,53.1942,-3.9531,"w3000,hewitt"
+Carnedd Gwenllian,926,53.183,-3.9663,"w3000,hewitt"
+Elidir Fawr,924,53.1311,-4.0833,"marilyn,w3000,hewitt"
+Crib Goch,923,53.075542,-4.053513,"w3000,hewitt"
+Tryfan,918,53.1517,-4.0114,"marilyn,w3000,hewitt"
+Aran Fawddwy,905,52.7847,-3.6881,"marilyn,hewitt"
+Y Lliwedd,898,53.06,-4.0533,"marilyn,hewitt"
+Cadair Idris,893,52.6986,-3.9047,"marilyn,hewitt"
+Pen y Fan,886,51.8839,-3.4368,"marilyn,hewitt"
+Aran Benllyn,885,52.80406,-3.68182,hewitt
+Moel Siabod,872,53.07,-3.9317,"marilyn,hewitt"
+Erw y Ddafad-ddu,872,52.796096,-3.685094,hewitt
+Mynydd Moel,863,52.7055,-3.8851,hewitt
+Arenig Fawr,854,52.9192,-3.7481,"marilyn,hewitt"
+Llwytmor,849,53.2039,-3.96356,hewitt
+Pen yr Helgi Du,833,53.1486,-3.948612,hewitt
+Cadair Berwyn,832,52.8803,-3.3794,"marilyn,hewitt"
+Foel-goch,831,53.13039,-4.05118,hewitt
+Moel Sych,827,52.8761,-3.38875,hewitt
+Carnedd y Filiast,821,53.14388,-4.06408,hewitt
+Waun Fach,811,51.9619,-3.1492,"marilyn,hewitt"
+Cyfrwy,811,52.7018,-3.92092,hewitt
+Y Foel Goch,805,53.10473,-3.97641,hewitt
+Fan Brycheiniog,803,51.8831,-3.7083,"marilyn,hewitt"
+Pen y Gadair Fawr,800,51.952,-3.1226,hewitt
+Pen Llithrig y Wrach,799,53.1264,-3.9069,"marilyn,hewitt"
+Cribyn,795,51.88184,-3.41951,hewitt
+Craig Cwm Amarch,792,52.69147,-3.90916,hewitt
+Cadair Bronwen,783,52.90148,-3.37286,hewitt
+Moel Hebog,783,52.9942,-4.1331,"marilyn,hewitt"
+Glasgwm,779,52.7539,-3.6889,"marilyn,hewitt"
+Drum,771,53.20764,-3.9353,hewitt
+Moelwyn Mawr,770,52.9867,-3.9875,"marilyn,hewitt"
+Waun Rydd,769,51.8722,-3.3606,"marilyn,hewitt"
+Gallt yr Ogof,763,53.10806,-3.96544,hewitt
+Fan Hir,760,51.87463,-3.69962,hewitt
+Drosgl,757,53.19214,-4.00133,hewitt
+Y Llethr,756,52.8272,-3.9856,"marilyn,hewitt"
+Pumlumon Fawr,752,52.4678,-3.7881,"marilyn,hewitt"
+Moel Llyfnant,751,52.9056,-3.7917,"marilyn,hewitt"
+Diffwys,750,52.79167,-3.9867,hewitt
+Bannau Sir Gaer,749,51.88264,-3.72779,hewitt
+Yr Aran,747,53.0519,-4.0806,"marilyn,hewitt"
+Pen Pumlumon Arwystli,741,52.47482,-3.74617,hewitt
+Craig Cwm Silyn,734,53.03,-4.2056,"marilyn,hewitt"
+Rhobell Fawr,734,52.8183,-3.8122,"marilyn,hewitt"
+Fan Fawr,734,51.8594,-3.4736,"marilyn,hewitt"
+Pen Pumlumon Llygad-bychan,727,52.46912,-3.76941,hewitt
+Moel Eilio,726,53.1114,-4.1564,"marilyn,hewitt"
+Fan Gyhirych,725,51.8589,-3.6064,"marilyn,hewitt"
+Rhinog Fawr,720,52.8469,-3.9786,"marilyn,hewitt"
+Pen Allt-mawr,719,51.91163,-3.15429,hewitt
+Rhinog Fach,711,52.82417,-3.98295,"marilyn,hewitt"
+Moelwyn Bach,710,52.97428,-3.99655,hewitt
+Trum y Ddysgl,709,53.0361,-4.1808,"marilyn,hewitt"
+Black Mountain,703,52.0169,-3.0808,"marilyn,hewitt"
+Pen Cerrig-calch,701,51.89479,-3.13994,hewitt
+Allt-Fawr,698,53.0031,-3.9583,"marilyn,hewitt"
+Mynydd Mawr,698,53.0642,-4.1706,"marilyn,hewitt"
+Mynydd Drws-y-coed,695,53.0439,-4.16592,hewitt
+Foel Wen,691,52.89059,-3.34008,hewitt
+Twmpa,690,52.00856,-3.13078,hewitt
+Arenig Fach,689,52.9469,-3.7508,"marilyn,hewitt"
+Cnicht,689,52.9997,-4.01982,hewitt
+Foel Hafod-fynydd,689,52.79033,-3.66581,hewitt
+Gwaun y Llwyni,685,52.76987,-3.69527,hewitt
+Pen y Brynfforchog,685,52.74634,-3.75279,hewitt
+Y Garn (Plynlimon),684,52.45057,-3.80305,hewitt
+Mynydd Tarw,679,52.88211,-3.32003,hewitt
+Chwarel y Fan,679,51.95827,-3.08095,hewitt
+Maesglase,679,52.7214,-3.7386,"marilyn,hewitt"
+Creigiau Gleision,678,53.1236,-3.8828,"marilyn,hewitt"
+Moel Druman,676,53.00958,-3.98133,hewitt
+Moel Cynghorion,674,53.0858,-4.1206,"marilyn,hewitt"
+Ysgafell Wen,672,53.01379,-3.98843,hewitt
+Esgeiriau Gwynion,671,52.8153,-3.5933,"marilyn,hewitt"
+Waun-oer,670,52.71706,-3.79935,hewitt
+Ysgafell Wen North Top,669,53.01742,-3.99377,hewitt
+Carnedd y Filiast,669,53.1389,-4.1103,"marilyn,hewitt"
+Foel Cedig,667,52.8364,-3.5261,"marilyn,hewitt"
+Tarren y Gesail,667,52.6186,-3.9103,"marilyn,hewitt"
+Post Gwyn,665,52.85366,-3.41522,hewitt
+Fan Nedd,663,51.8394,-3.5858,"marilyn,hewitt"
+Mynydd Llysiau,663,51.94435,-3.15499,hewitt
+Dduallt,662,52.83072,-3.7669,hewitt
+Manod Mawr,661,52.9861,-3.9114,"marilyn,hewitt"
+Craig-las,661,52.7035,-3.95944,hewitt
+Great Rhos,660,52.2611,-3.2008,"marilyn,hewitt"
+Cribin Fawr,659,52.72179,-3.78622,hewitt
+Manod Mawr North Top,658,52.99481,-3.89747,hewitt
+Moel yr Ogof,655,53.00856,-4.15326,hewitt
+Mynydd Tal-y-mignedd,653,53.03978,-4.186,hewitt
+Black Mixen,650,52.27187,-3.17894,hewitt
+Moel-yr-hydd,648,52.98978,-3.97968,hewitt
+Foel Cwm-Sian Llwyd,648,52.87056,-3.49321,hewitt
+Pen y Boncyn Trefeilw,646,52.84238,-3.54203,hewitt
+Drygarn Fawr,645,52.2131,-3.6731,"marilyn,hewitt"
+Moel Lefn,638,53.01467,-4.15848,hewitt
+Garreg Las,635,51.86812,-3.77701,hewitt
+Tarrenhendre,634,52.6022,-3.9556,"marilyn,hewitt"
+Creigiau Gleision North Top,634,53.14232,-3.8946,hewitt
+Fan Llia,632,51.85598,-3.54292,hewitt
+Pen yr Allt Uchaf,630,52.76283,-3.67454,hewitt
+Moel Fferna,630,52.94829,-3.31587,hewitt
+Fan Frynych,629,51.89389,-3.51576,hewitt
+Craig Cerrig-gleisiad,629,51.88509,-3.51141,hewitt
+Y Garn (Rhinogydd),629,52.7842,-3.9622,"marilyn,hewitt"
+Foel Gron,629,53.0894,-4.15101,hewitt
+Moel Penamnen,628,53.01715,-3.91504,hewitt
+Foel y Geifr,626,52.83476,-3.57921,hewitt
+Moel y Cerrig Duon,625,52.80415,-3.59826,hewitt
+Moel Ysgyfarnogod,623,52.8808,-3.9789,"marilyn,hewitt"
+Craig-y-llyn,622,52.68899,-3.97616,hewitt
+Moel yr Henfaes,621,52.9222,-3.35579,hewitt
+Gallt y Daren,619,52.89376,-3.81704,hewitt
+Cefn yr Ystrad,619,51.8183,-3.3769,"marilyn,hewitt"
+Garreg Lwyd,616,51.84572,-3.82992,hewitt
+Llechwedd Du,614,52.78778,-3.64142,hewitt
+Corllwyn,613,52.21902,-3.58533,hewitt
+Foel Goch (Hirnant),613,52.84886,-3.57038,hewitt
+Foel Goch (Arenigs),611,52.9986,-3.5414,"marilyn,hewitt"
+Pen y Garn,611,52.3703,-3.7844,"marilyn,hewitt"
+Bache Hill,610,52.26537,-3.15329,hewitt
+Tal y Fan,610,53.2386,-3.8814,"marilyn,hewitt"
+Mynydd Graig Goch,6010,53.01282,-4.24132,hewitt
 Mynydd Troed,609,51.9614,-3.2106,marilyn
 Craig y Llyn,600,51.6883,-3.5808,marilyn
 Sugar Loaf,596,51.8586,-3.0558,marilyn

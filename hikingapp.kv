@@ -9,6 +9,7 @@
 <TabBar>:
     do_default_tab: False
     tab_width: self.width / 5
+    padding: 0, dp(60), 0, dp(20)
 
     TabbedPanelItem:
         text: 'Home'
@@ -18,7 +19,9 @@
 
     TabbedPanelItem:
         text: 'Add Climb'
-        on_release: add_climbs.reset_search()
+        on_release:
+            add_climbs.reset_search()
+            add_climbs.search_mountains("")
         AddClimbs:
             id: add_climbs
 
@@ -51,6 +54,9 @@
     BoxLayout:
         id: map_container
         orientation: "vertical"
+        on_touch_down: root.map_touch_down(args[1])
+        on_touch_move: root.map_touch_move(args[1])
+        on_touch_up: root.map_touch_up(args[1])
 
     BoxLayout:
         id: climbed_filters
@@ -138,26 +144,50 @@
             id: mountain_search
             hint_text: "Search for a mountain"
             on_text: root.search_mountains(self.text)
+            size_hint_y: None
+            height: dp(45)
+            font_size: sp(16)
+            multiline: False
 
-        BoxLayout:
-            id: mountain_results
-            orientation: "vertical"
+        ScrollView:
+            do_scroll_x: False
+            BoxLayout:
+                id: mountain_results
+                orientation: "vertical"
+                size_hint_y: None
+                height: self.minimum_height
 
         Label:
             id: selected_mountain
             text: "No mountain selected"
+            size_hint_y: None
+            height: dp(45)
+            font_size: sp(16)
 
-        TextInput:
+        DateInput:
             id: date_climbed
-            hint_text: "Date climbed"
+            hint_text: "Date climbed YYYY-MM-DD"
+            size_hint_y: None
+            height: dp(45)
+            font_size: sp(16)
+            multiline: False
+            on_text: root.update_date_text(self)
 
-        TextInput:
+        TimeInput:
             id: time_climbed
-            hint_text: "Time climbed"
+            hint_text: "Time climbed HH:mm (24h)"
+            size_hint_y: None
+            height: dp(45)
+            font_size: sp(16)
+            on_text: root.update_time_text(self)
+            multiline: False
 
         Button:
             text: "Add Climb"
             on_release: root.add_climb_from_form()
+            size_hint_y: None
+            height: dp(45)
+            font_size: sp(16)
 
 <Mountains>:
     orientation: "vertical"

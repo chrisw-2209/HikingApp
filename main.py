@@ -11,87 +11,98 @@ from kivy.metrics import sp, dp
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.widget import Widget
 from kivy.clock import Clock
-from kivy_garden.mapview import MapView, MapMarker, MapMarkerPopup
+from kivy_garden.mapview import MapView, MapMarkerPopup, MapSource
 from kivy.properties import StringProperty, NumericProperty
 from datetime import datetime
+from kivy.clock import Clock
+from kivy.uix.textinput import TextInput
+from kivy.utils import platform
+from kivy.core.window import Window
 
-__version__ = "1.0.0"
+if platform != "android":
+    Window.size = (500, 1000)
+
+__version__ = "1.1.0"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 csv_path = os.path.join(BASE_DIR, "mountain_data.csv")
+Window.softinput_mode = "below_target"
 
-class ClimbLabel(Label):
+class DateInput(TextInput):
+    def do_backspace(self, from_undo=False, mode='bkspc'):
+        if self.text.endswith("-"):
+            self.text = self.text[:-2]
+            self.cursor = self.get_cursor_from_index(len(self.text))
+            return
+        return super().do_backspace(from_undo=from_undo, mode=mode)
+
+class TimeInput(TextInput):
+    def do_backspace(self, from_undo=False, mode='bkspc'):
+        if self.text.endswith(":"):
+            self.text = self.text[:-2]
+            self.cursor = self.get_cursor_from_index(len(self.text))
+            return
+        return super().do_backspace(from_undo=from_undo, mode=mode)                
+
+class ClimbButton(Button):
+    __events__ = ('on_long_press',)
     def __init__(
-        self,
-        climb_id,
-        mountain_name,
-        date_climbed,
-        on_delete,
-        **kwargs
-    ):
-        super().__init__(**kwargs)
-
-        self.climb_id = climb_id
-        self.mountain_name = mountain_name
-        self.date_climbed = date_climbed
-        self.on_delete = on_delete
-
-        self.long_press_event = None
-        self.touch_start_pos = None
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos):
-            self.touch_start_pos = touch.pos
-            self.long_press_event = Clock.schedule_once(
-                lambda dt: self.long_press(),
-                0.8
-            )
-        return super().on_touch_down(touch)
-    def on_touch_move(self, touch):
-        if hasattr(self, "touch_start_pos"):
-            start_x, start_y = self.touch_start_pos
-            current_x, current_y = touch.pos
-            distance = ((current_x - start_x) ** 2 +
-                        (current_y - start_y) ** 2) ** 0.5
-            if distance > dp(15):
-                if self.long_press_event:
-                    self.long_press_event.cancel()
-                    self.long_press_event = None
-        return super().on_touch_move(touch)
-    def delete_pressed(self, popup):
-        delete_climb(self.climb_id)
-        popup.dismiss()
-        self.on_delete()
+            self,
+            climb_id,
+            mountain_name,
+            date_climbed,
+            on_delete,
+            **kwargs
+        ):
+            super().__init__(**kwargs)
+            self.climb_id = climb_id
+            self.mountain_name = mountain_name
+            self.date_climbed = date_climbed
+            self.on_delete = on_delete
+            self._clockev = None
     def long_press(self):
-        content = BoxLayout(
-            orientation="vertical",
-            spacing=dp(10),
-            padding=dp(10)
-        )
-        message = Label(
-            text=f"Delete climb {self.mountain_name} on {self.date_climbed}"
-        )
-        buttons = BoxLayout(
-            orientation="horizontal",
-            size_hint_y=None,
-            height=dp(50)
-        )
-        cancel_button = Button(text="Cancel")
-        delete_button = Button(text="Delete")
-        buttons.add_widget(cancel_button)
-        buttons.add_widget(delete_button)
-        content.add_widget(message)
-        content.add_widget(buttons)
-        popup = Popup(
-            title="Delete Climb?",
-            content=content,
-            size_hint=(0.6, 0.3)
-        )
-        cancel_button.bind(on_release=popup.dismiss)
-        delete_button.bind(
-            on_release=lambda instance: self.delete_pressed(popup)
-        )
-        popup.open()
-
+            content = BoxLayout(
+                orientation="vertical",
+                spacing=dp(10),
+                padding=dp(10)
+            )
+            message = Label(
+                text=f"Delete climb {self.mountain_name} on {self.date_climbed}"
+            )
+            buttons = BoxLayout(
+                orientation="horizontal",
+                size_hint_y=None,
+                height=dp(50)
+            )
+            cancel_button = Button(text="Cancel")
+            delete_button = Button(text="Delete")
+            buttons.add_widget(cancel_button)
+            buttons.add_widget(delete_button)
+            content.add_widget(message)
+            content.add_widget(buttons)
+            popup = Popup(
+                title="Delete Climb?",
+                content=content,
+                size_hint=(0.6, 0.3)
+            )
+            cancel_button.bind(on_release=popup.dismiss)
+            delete_button.bind(
+                on_release=lambda instance: self.delete_pressed(popup)
+            )
+            popup.open()
+    def on_state(self, instance, value):
+        if value == "down":
+            lpt = 0.8
+            self._clockev = Clock.schedule_once(self._do_long_press,lpt)
+        else:
+            if self._clockev:
+                self._clockev.cancel()
+    def _do_long_press(self,dt):
+        self.dispatch('on_long_press')
+    def on_long_press(self,*largs):
+        self.long_press()
+        pass
+    
 class MountainMarker(MapMarkerPopup):
     mountain_name = StringProperty("")
     elevation = NumericProperty(0)
@@ -101,6 +112,11 @@ class MountainMarker(MapMarkerPopup):
         self.mountain_id = mountain_id
         self.mountain_name = mountain_name
         self.elevation = elevation
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos) and touch.is_double_tap:
+            print("double tap on this marker")
+            return super().on_touch_down(touch)
+        return False
 
 class TabBar(TabbedPanel):
     pass
@@ -113,17 +129,32 @@ class Home(BoxLayout):
         self.mapview = None
         self.markers = []
         self.climbed_filter = None
+        self.active_map_touches = {}
+        self.map_touch_start = None
+        self.was_dragged = False
     def on_kv_post(self, base_widget):
         self.create_climbed_filters()
         self.show_map()
         self.show_markers()
     def set_climbed_filter(self, climbed):
         self.climbed_filter = climbed
-        #print(self.climbed_filter)
         self.show_markers()
     def show_map(self):
         self.ids.map_container.clear_widgets()
-        self.mapview = MapView(zoom=8, lat=52.33022, lon=-3.76641)
+        osm_source = MapSource(
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            cache_key="osm",
+            min_zoom=0,
+            max_zoom=19,
+            tile_size=256,
+            image_ext="png"
+        )
+        self.mapview = MapView(
+            zoom=8,
+            lat=52.33022,
+            lon=-3.76641,
+            map_source=osm_source
+        )
         self.ids.map_container.add_widget(self.mapview)
     def get_selected_classifications(self):
         selected = []
@@ -146,6 +177,7 @@ class Home(BoxLayout):
                 lat=mountain[3],
                 lon=mountain[4]
                 )
+            temp_marker.mapview = self.mapview
             temp_marker.bind(
                 on_release=lambda marker: self.marker_pressed(marker)
             )       
@@ -186,6 +218,27 @@ class Home(BoxLayout):
     def refresh_home(self):
         self.show_map()
         self.show_markers()
+    def map_touch_down(self, touch):
+        if self.mapview.collide_point(*touch.pos):
+            self.map_touch_start = touch.pos
+            self.was_dragged = False
+    def map_touch_move(self, touch):
+        if self.map_touch_start is None:
+            return
+        start_x, start_y = self.map_touch_start
+        current_x, current_y = touch.pos
+        distance = ((start_x - current_x)**2 + (start_y - current_y)**2) ** 0.5
+        if distance > dp(15):
+            self.was_dragged = True
+    def map_touch_up(self, touch):
+        if self.map_touch_start is None:
+            return
+        if not self.was_dragged:
+            if self.open_marker is not None:
+                self.open_marker.is_open = False
+                self.open_marker = None
+        self.map_touch_start = None
+        self.was_dragged = False
 
 class Statistics(BoxLayout):
     def on_kv_post(self, base_widget):
@@ -207,14 +260,10 @@ class Mountains(BoxLayout):
     descending = True
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
         self.classification_checkboxes = {}
-
     def on_kv_post(self, base_widget):
-
         self.create_classification_filters()
         self.show_mountains()
-
     def create_classification_filters(self):
         classifications = get_classifications()
         for classification in classifications:
@@ -242,8 +291,6 @@ class Mountains(BoxLayout):
             row.add_widget(chk)
             self.ids.classification_filters.add_widget(row)
     def checkbox_changed(self, checkbox, value):
-        #selected = self.get_selected_classifications()
-        #print(selected)
         self.show_mountains()
     def get_selected_classifications(self):
         selected = []
@@ -332,7 +379,7 @@ class Climbs(BoxLayout):
             self.descending
         )
         for climb in climbs:
-            label = ClimbLabel(
+            label = ClimbButton(
                 climb_id=climb[0],
                 mountain_name=climb[1],
                 date_climbed=climb[2],
@@ -351,19 +398,15 @@ class AddClimbs(BoxLayout):
     selected_mountain_id = None
     def search_mountains(self, search_text):
         self.ids.mountain_results.clear_widgets()
-        if search_text == "":
-            return
         mountains = get_mountains()
         for mountain in mountains:
             if mountain[1].lower().startswith(search_text.lower()):
-                button = Button(text=mountain[1])
+                button = Button(text=mountain[1],size_hint_y=None,height=dp(45))
                 button.bind(
                     on_release=lambda x, mountain_id=mountain[0]:
                     self.select_mountain(mountain_id)
                 )
                 self.ids.mountain_results.add_widget(button)
-                if len(self.ids.mountain_results.children) >= 10:
-                    break
     def select_mountain(self, mountain_id):
         self.selected_mountain_id = mountain_id
         mountains = get_mountains()
@@ -435,6 +478,50 @@ class AddClimbs(BoxLayout):
         self.ids.mountain_results.clear_widgets()
     def reset_search(self):
         self.ids.mountain_search.text = ""
+    def format_date(self, text):
+        formatted_text = ''.join([char for char in text if char.isdigit()])
+        if len(formatted_text) < 4:
+            return formatted_text
+        elif len(formatted_text) == 4:
+            return formatted_text+"-"
+        elif len(formatted_text) < 6:
+            return formatted_text[0:4]+"-"+formatted_text[4:]
+        elif len(formatted_text) == 6:
+            return formatted_text[0:4]+"-"+formatted_text[4:]+"-"
+        else:
+            return formatted_text[0:4]+"-"+formatted_text[4:6]+"-"+formatted_text[6:8]
+    def update_date_text(self, text_input):
+        formatted = self.format_date(text_input.text)
+        if text_input.text != formatted:
+            text_input.text = formatted
+            Clock.schedule_once(
+                lambda dt: setattr(
+                    text_input,
+                    "cursor",
+                    text_input.get_cursor_from_index(len(formatted))
+                ),
+                0
+            )
+    def format_time(self,text):
+        formatted_text = ''.join([char for char in text if char.isdigit()])
+        if len(formatted_text) < 2:
+            return formatted_text
+        elif len(formatted_text) == 2:
+            return formatted_text+":"
+        else:
+            return formatted_text[:2]+":"+formatted_text[2:]
+    def update_time_text(self, text_input):
+        formatted = self.format_time(text_input.text)
+        if text_input.text != formatted:
+            text_input.text = formatted
+            Clock.schedule_once(
+                lambda dt: setattr(
+                    text_input,
+                    "cursor",
+                    text_input.get_cursor_from_index(len(formatted))
+                ),
+                0
+            )
 
 class HikingApp(App):
     def build(self):
