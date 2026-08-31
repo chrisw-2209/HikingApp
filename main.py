@@ -22,7 +22,7 @@ from kivy.core.window import Window
 if platform != "android":
     Window.size = (500, 1000)
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 csv_path = os.path.join(BASE_DIR, "mountain_data.csv")

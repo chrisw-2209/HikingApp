@@ -42,11 +42,11 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3==3.11.6,hostpython3==3.11.6,kivy,mapview,requests,openssl
+requirements = python3==3.11.6,hostpython3==3.11.6,kivy,requests,openssl
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
-# requirements.source.kivy = ../../kivy
+#requirements.source.mapview = /home/chris2/Projects/mapview
 
 # (str) Presplash of the application
 #presplash.filename = %(source.dir)s/data/presplash.png
