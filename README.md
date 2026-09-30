@@ -48,4 +48,8 @@ python main.py
 ```
 
 *The application uses mobile-device functionality such as GPS, so some
+<<<<<<< HEAD
 features require a compatible device and appropriate permissions.*
+=======
+features require a compatible device and appropriate permissions.*
+>>>>>>> 5b34a24 (bugs fixed working basic app)
