@@ -18,7 +18,7 @@ a summit automatically.
 
 -   **Python**
 -   **Kivy**
--   **SQLite**
+-   **SQLite3**
 -   **Plyer**
 
 ## Project Status
