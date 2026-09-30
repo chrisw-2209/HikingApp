@@ -707,14 +707,14 @@ class MapView(Widget):
                 zoom, scale = self._touch_zoom
                 cur_zoom = self.zoom
                 cur_scale = self._scale
-                print(
-                    "MAPVIEW RELEASE:",
-                    "start_zoom =", repr(zoom),
-                    "start_scale =", repr(scale),
-                    "cur_zoom =", repr(cur_zoom),
-                    "cur_scale =", repr(cur_scale),
-                    "touch_count =", self._touch_count,
-                )
+                #print(
+                #    "MAPVIEW RELEASE:",
+                #    "start_zoom =", repr(zoom),
+                #    "start_scale =", repr(scale),
+                #    "cur_zoom =", repr(cur_zoom),
+                #    "cur_scale =", repr(cur_scale),
+                #    "touch_count =", self._touch_count,
+                #)
                 scale_tolerance = 0.001
                 if cur_zoom < zoom or cur_scale < scale - scale_tolerance:
                     self.animated_diff_scale_at(1.0 - cur_scale, *touch.pos)

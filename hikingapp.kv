@@ -9,11 +9,10 @@
 <TabBar>:
     do_default_tab: False
     tab_width: self.width / 5
-    padding: 0, dp(60), 0, dp(20)
+    padding: 0, dp(60), 0, dp(50)
 
     TabbedPanelItem:
         text: 'Home'
-        on_release: home.show_markers()
         Home:
             id: home
 
@@ -51,12 +50,34 @@
         size_hint_y: None
         height: self.minimum_height
     
-    BoxLayout:
-        id: map_container
-        orientation: "vertical"
-        on_touch_down: root.map_touch_down(args[1])
-        on_touch_move: root.map_touch_move(args[1])
-        on_touch_up: root.map_touch_up(args[1])
+    FloatLayout:
+        id: map_area
+        BoxLayout:
+            id: map_container
+            size_hint: 1,1
+            pos: self.parent.pos
+            orientation: "vertical"
+            on_touch_down: root.map_touch_down(args[1])
+            on_touch_move: root.map_touch_move(args[1])
+            on_touch_up: root.map_touch_up(args[1])
+        Button:
+            text: "+"
+            size_hint: None, None
+            size: dp(50), dp(50)
+            pos_hint: {"right": 0.98, "top": 0.95}
+            on_release: root.map_zoom_in()
+        Button:
+            text: "-"
+            size_hint: None, None
+            size: dp(50), dp(50)
+            pos_hint: {"right": 0.98, "top": 0.85}
+            on_release: root.map_zoom_out()
+        Button:
+            text: "X"
+            size_hint: None, None
+            size: dp(50), dp(50)
+            pos_hint: {"right": 0.98, "y": 0.02}
+            on_release: root.map_centre()
 
     BoxLayout:
         id: climbed_filters
@@ -140,6 +161,13 @@
     BoxLayout:
         orientation: "vertical"
 
+        Button:
+            text: "Auto Add Climb"
+            on_release: root.add_climb_auto()
+            size_hint_y: None
+            height: dp(45)
+            font_size: sp(16)
+
         TextInput:
             id: mountain_search
             hint_text: "Search for a mountain"
@@ -149,13 +177,16 @@
             font_size: sp(16)
             multiline: False
 
-        ScrollView:
-            do_scroll_x: False
-            BoxLayout:
-                id: mountain_results
-                orientation: "vertical"
+        RecycleView:
+            id: mountain_results
+            viewclass: "MountainButton"
+            RecycleBoxLayout:
+                default_size: None, dp(45)
+                default_size_hint: 1, None
                 size_hint_y: None
                 height: self.minimum_height
+                orientation: "vertical"
+
 
         Label:
             id: selected_mountain
